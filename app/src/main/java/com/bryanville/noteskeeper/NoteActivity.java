@@ -88,14 +88,13 @@ public class NoteActivity extends AppCompatActivity {
     private void readDisplayStateValues() {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra(NOTE_POSITION)) {
-//           mNoteInfo = intent.getParcelableExtra(NOTE_POSITION);
-            int note_position = intent.getIntExtra(NOTE_POSITION, POSITION_NOT_SET);
-            mIsNewNote = note_position == POSITION_NOT_SET;
+            mNotePosition = intent.getIntExtra(NOTE_POSITION, POSITION_NOT_SET);
+            mIsNewNote = mNotePosition == POSITION_NOT_SET;
             if (mIsNewNote) {
                 createNewNote();
-            } else {
-                mNoteInfo = DataManager.getInstance().getNotes().get(note_position);
             }
+            mNoteInfo = DataManager.getInstance().getNotes().get(mNotePosition);
+
         } else {
             Log.d(LOG_TAG, "This intent has no extra data my boss");
         }
@@ -111,7 +110,7 @@ public class NoteActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         if (isCancelling) {
-            Log.i(LOG_TAG,"Note Position is at position"+mNotePosition);
+            Log.i(LOG_TAG, "Note Position is at position" + mNotePosition);
             if (mIsNewNote) {
                 DataManager.getInstance().removeNote(mNotePosition);
             } else {
@@ -120,7 +119,7 @@ public class NoteActivity extends AppCompatActivity {
         } else {
             saveNote();
         }
-        Log.d(LOG_TAG,"onPause");
+        Log.d(LOG_TAG, "onPause");
     }
 
     private void storePreviousNoteValues() {
