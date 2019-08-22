@@ -34,6 +34,8 @@ import java.util.List;
 
 import static com.bryanville.noteskeeper.database.NoteKeeperDatabaseContract.CourseInfoEntry;
 import static com.bryanville.noteskeeper.database.NoteKeeperDatabaseContract.NoteInfoEntry;
+import static com.bryanville.noteskeeper.provider.NoteKeeperProviderContract.Courses;
+import static com.bryanville.noteskeeper.provider.NoteKeeperProviderContract.Notes;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -53,11 +55,11 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar =  findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mDbOpenHelper = new NoteKeeperOpenHelper(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab =  findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -71,7 +73,7 @@ public class MainActivity extends AppCompatActivity
         PreferenceManager.setDefaultValues(this,R.xml.pref_notification,false);
         PreferenceManager.setDefaultValues(this,R.xml.pref_data_sync,false);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string
                 .navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
@@ -233,32 +235,24 @@ public class MainActivity extends AppCompatActivity
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         CursorLoader cursorLoader = null;
-        if (id == LOADER_NOTES)
-            cursorLoader = createNotesLoader();
-        return cursorLoader;
+        if (id == LOADER_NOTES) {
+            String[] noteColumns = {
+                    Notes._ID,
+                    Notes.COLUMN_NOTE_TITLE,
+                    Courses.COLUMN_COURSE_TITLE
+            };
+            String noteOrder =
+                    Courses.COLUMN_COURSE_TITLE + "," + Notes.COLUMN_NOTE_TITLE;
+
+            cursorLoader = new CursorLoader(this, Notes.NOTES_CONTENT_EXPANDED_URI, noteColumns,
+                    null, null, noteOrder);
+
+        }
+            return cursorLoader;
+
     }
 
-    private CursorLoader createNotesLoader() {
-        return new CursorLoader(this) {
-            @Override
-            public Cursor loadInBackground() {
-                SQLiteDatabase db = mDbOpenHelper.getReadableDatabase();
-                String[] noteColumns = {
-                        NoteInfoEntry.getQName(NoteInfoEntry._ID),
-                        NoteInfoEntry.COLUMN_NOTE_TITLE,
-                        CourseInfoEntry.COLUMN_COURSE_TITLE
-                };
-                String tablesWithJoin = NoteInfoEntry.NOTE_TABLE + " JOIN " +
-                        CourseInfoEntry.COURSE_TABLE + " ON " +
-                        NoteInfoEntry.getQName(NoteInfoEntry.COLUMN_COURSE_ID) + " = " +
-                        CourseInfoEntry.getQName(CourseInfoEntry.COLUMN_COURSE_ID);
-                String noteOrder =
-                        CourseInfoEntry.COLUMN_COURSE_TITLE + "," + NoteInfoEntry.COLUMN_NOTE_TITLE;
-                return db.query(tablesWithJoin, noteColumns, null, null,
-                        null, null, noteOrder);
-            }
-        };
-    }
+
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {

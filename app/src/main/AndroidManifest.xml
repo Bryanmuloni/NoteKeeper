@@ -9,6 +9,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <provider
+            android:name=".provider.NoteKeeperProvider"
+            android:authorities="com.bryanville.noteskeeper.provider"
+            android:enabled="true"
+            android:exported="true"></provider>
+
         <activity
             android:name=".NoteActivity"
             android:label="@string/title_activity_note_list"
