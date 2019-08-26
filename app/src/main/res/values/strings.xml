@@ -110,5 +110,21 @@
     <string name="prefs_default_favorite_social">https://plus.google.com</string>
     <string name="key_user_favorite_social">user_favorite_social</string>
     <string name="key_user_email_address">user_email_address</string>
+    <string name="action_set_reminder">Set Reminder</string>
+
+    <string name="note_reminder_notification_title_template">Note reminder: %1$s</string>
+
+    <!-- TODO: remove this placeholder text -->
+    <string name="note_reminder_notification_placeholder_text_template">You said %1$s and lorem
+        ipsum dolor sit amet, consectetur adipiscing elit. Etiam non enim magna. Morbi dictum, velit
+        vel semper venenatis, magna odio volutpat velit, at ullamcorper nulla lacus sed turpis.
+        Pellentesque vitae metus elit, nec tincidunt tellus. Integer sed nisl sem, ullamcorper
+        ornare lacus. Duis ac mauris sed massa congue volutpat. Donec sed erat sit amet turpis
+        viverra rhoncus sit amet nec magna. Donec lacinia ligula at libero volutpat volutpat nec nec
+        tortor.
+    </string>
+
+    <string name="action_share">Share</string>
+    <string name="action_reply">Reply</string>
 
 </resources>
