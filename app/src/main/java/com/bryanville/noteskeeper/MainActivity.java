@@ -8,6 +8,9 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -32,7 +35,6 @@ import com.bryanville.noteskeeper.database.NoteKeeperOpenHelper;
 
 import java.util.List;
 
-import static com.bryanville.noteskeeper.database.NoteKeeperDatabaseContract.CourseInfoEntry;
 import static com.bryanville.noteskeeper.database.NoteKeeperDatabaseContract.NoteInfoEntry;
 import static com.bryanville.noteskeeper.provider.NoteKeeperProviderContract.Courses;
 import static com.bryanville.noteskeeper.provider.NoteKeeperProviderContract.Notes;
@@ -67,6 +69,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        enableStrictMode();
 
 
         PreferenceManager.setDefaultValues(this,R.xml.pref_general,false);
@@ -86,11 +89,35 @@ public class MainActivity extends AppCompatActivity
 //        loadNotes();
 
     }
+
+    private void enableStrictMode() {
+        if (BuildConfig.DEBUG) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build();
+            StrictMode.setThreadPolicy(policy);
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(LOADER_NOTES, null, this);
         updateNavHeader();
+        openDrawer();
+    }
+
+    private void openDrawer() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        }, 1000);
+
     }
 
     private void loadNotes() {

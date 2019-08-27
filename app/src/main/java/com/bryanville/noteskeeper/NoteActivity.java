@@ -14,12 +14,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -191,14 +194,15 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void deleteNoteFromDatabase() {
-        final String selection = NoteInfoEntry._ID + " = ?";
-        final String[] selectionArgs = {Integer.toString(mNoteId)};
+//        final String selection = NoteInfoEntry._ID + " = ?";
+//        final String[] selectionArgs = {Integer.toString(mNoteId)};
 
         @SuppressLint("StaticFieldLeak") AsyncTask task = new AsyncTask() {
             @Override
             protected Object doInBackground(Object[] objects) {
-                SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
-                db.delete(NoteInfoEntry.NOTE_TABLE,selection,selectionArgs);
+//                SQLiteDatabase db = mDbOpenHelper.getWritableDatabase();
+//                db.delete(NoteInfoEntry.NOTE_TABLE,selection,selectionArgs);
+                getContentResolver().delete(mNoteUri, null, null);
                 return null;
             }
         };
@@ -316,15 +320,70 @@ public class NoteActivity extends AppCompatActivity implements LoaderManager.Loa
 
 
     private void createNewNote() {
+
+        @SuppressLint("StaticFieldLeak") AsyncTask<ContentValues, Integer, Uri> task =
+                new AsyncTask<ContentValues, Integer, Uri>() {
+                    private ProgressBar mProgressBar;
+
+                    @Override
+                    protected void onPreExecute() {
+                        mProgressBar = findViewById(R.id.progressBar);
+                        mProgressBar.setVisibility(View.VISIBLE);
+                        mProgressBar.setProgress(1);
+                    }
+
+                    @Override
+                    protected Uri doInBackground(ContentValues... contentValues) {
+                        Log.d(LOG_TAG, "doInBackground: thread: " + Thread.currentThread().getId());
+                        ContentValues insertValues = contentValues[0];
+                        Uri rowUri = getContentResolver().insert(Notes.NOTES_CONTENT_URI, insertValues);
+
+                        simulateLongRunningWork();
+                        publishProgress(2);
+
+
+                        simulateLongRunningWork();
+                        publishProgress(3);
+                        return rowUri;
+                    }
+
+                    @Override
+                    protected void onProgressUpdate(Integer... values) {
+                        int progressValue = values[0];
+                        mProgressBar.setProgress(progressValue);
+                    }
+
+                    @Override
+                    protected void onPostExecute(Uri uri) {
+                        mNoteUri = uri;
+                        Log.d(LOG_TAG, "onPostExecute: thread: " + Thread.currentThread().getId());
+                        displaySnackBar(mNoteUri.toString());
+                        mProgressBar.setVisibility(View.GONE);
+                    }
+                };
         ContentValues values = new ContentValues();
         values.put(Notes.COLUMN_COURSE_ID, "");
         values.put(Notes.COLUMN_NOTE_TITLE, "");
         values.put(Notes.COLUMN_NOTE_TEXT, "");
-
-        mNoteUri = getContentResolver().insert(Notes.NOTES_CONTENT_URI,
-                values);
+        Log.d(LOG_TAG, "createNewNote: call to execute - thread: " + Thread.currentThread().getId());
+        task.execute(values);
 
     }
+
+    private void simulateLongRunningWork() {
+        try {
+            Thread.currentThread();
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void displaySnackBar(String noteUri) {
+        View view = findViewById(R.id.mainConstraint);
+        Snackbar.make(view, noteUri, Snackbar.LENGTH_SHORT).show();
+    }
+
     @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int i, @Nullable Bundle bundle) {
