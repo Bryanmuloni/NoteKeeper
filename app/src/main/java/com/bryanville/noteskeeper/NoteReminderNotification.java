@@ -55,6 +55,9 @@ public class NoteReminderNotification {
         Intent noteActivityIntent = new Intent(context, NoteActivity.class);
         noteActivityIntent.putExtra(NoteActivity.NOTE_ID, noteId);
 
+        Intent backupServiceIntent = new Intent(context, NoteBackupService.class);
+        backupServiceIntent.putExtra(NoteBackupService.EXTRA_COURSE_ID, NoteBackup.ALL_COURSES);
+
 
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(context,
                 NOTE_REMINDER_NOTIFICATION_CHANNEL)
@@ -109,22 +112,23 @@ public class NoteReminderNotification {
                 // should ensure that the activity in this notification's
                 // content intent provides access to the same actions in
                 // another way.
-                .addAction(
-                        R.drawable.ic_action_stat_share,
-                        res.getString(R.string.action_share),
-                        PendingIntent.getActivity(
-                                context,
-                                0,
-                                Intent.createChooser(new Intent(Intent.ACTION_SEND)
-                                        .setType("text/plain")
-                                        .putExtra(Intent.EXTRA_TEXT, "Dummy text"), "Dummy title"),
-                                PendingIntent.FLAG_UPDATE_CURRENT))
-                .addAction(
-                        R.drawable.ic_action_stat_reply,
-                        res.getString(R.string.action_reply),
-                        null)
+//                .addAction(
+//                        R.drawable.ic_action_stat_share,
+//                        res.getString(R.string.action_share),
+//                        PendingIntent.getActivity(
+//                                context,
+//                                0,
+//                                Intent.createChooser(new Intent(Intent.ACTION_SEND)
+//                                        .setType("text/plain")
+//                                        .putExtra(Intent.EXTRA_TEXT, "Dummy text"), "Dummy title"),
+//                                PendingIntent.FLAG_UPDATE_CURRENT))
+
                 .addAction(0, "View all notes", PendingIntent.getActivity(context, 0,
                         new Intent(context, MainActivity.class),
+                        PendingIntent.FLAG_UPDATE_CURRENT))
+
+                .addAction(0, "Backup notes", PendingIntent.getService(context, 0,
+                        backupServiceIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT))
 
                 // Automatically dismiss the notification when it is touched.

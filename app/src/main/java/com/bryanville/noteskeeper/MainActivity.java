@@ -1,6 +1,9 @@
 package com.bryanville.noteskeeper;
 
 import android.app.LoaderManager;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -10,6 +13,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PersistableBundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -44,6 +48,7 @@ public class MainActivity extends AppCompatActivity
         LoaderManager.LoaderCallbacks<Cursor> {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int LOADER_NOTES = 2;
+    public static final int NOTE_UPLOADER_JOB_ID = 1;
     private NoteRecyclerAdapter mNoteRecyclerAdapter;
     private List<NoteInfo> mNoteInfoList;
     private RecyclerView mRecyclerViewItems;
@@ -215,9 +220,39 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_settings) {
             startActivity(new Intent(this,SettingsActivity.class));
             return true;
+        } else if (id == R.id.action_backup_notes) {
+
+            backupNotes();
+        } else if (id == R.id.action_upload_notes) {
+
+            scheduleNoteUpload();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void scheduleNoteUpload() {
+
+        PersistableBundle extras = new PersistableBundle();
+        extras.putString(NoteUploaderJobService.EXTRA_DATA_URI, Notes.NOTES_CONTENT_URI.toString());
+
+
+        ComponentName componentName = new ComponentName(this, NoteUploaderJobService.class);
+        JobInfo jobInfo = new JobInfo.Builder(NOTE_UPLOADER_JOB_ID, componentName)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setExtras(extras)
+                .build();
+
+        JobScheduler jobScheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+        jobScheduler.schedule(jobInfo);
+    }
+
+    private void backupNotes() {
+        Intent intent = new Intent(this, NoteBackupService.class);
+        intent.putExtra(NoteBackupService.EXTRA_COURSE_ID, NoteBackup.ALL_COURSES);
+        startService(intent);
+
+//        NoteBackup.doBackup(this,NoteBackup.ALL_COURSES);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

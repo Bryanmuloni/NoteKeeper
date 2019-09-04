@@ -126,5 +126,7 @@
 
     <string name="action_share">Share</string>
     <string name="action_reply">Reply</string>
+    <string name="action_backup_notes">Backup notes</string>
+    <string name="action_upload_notes">Upload notes</string>
 
 </resources>
